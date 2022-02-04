@@ -1,36 +1,64 @@
 ﻿@model IEnumerable<Order>
 
-@{
+    @{
     ViewBag.Title = "Orders";
     Layout = "_AdminLayout";
-}
+    string tenant = null;
+    tenant = Context.User?.FindFirst("sub")?.Value;
+    }
 
-@if (Model.Count() > 0) {
+    @if (Model.Count() > 0) {
 
     <table class="table table-bordered table-striped">
-        <tr><th>Name</th><th>Zip</th><th colspan="2">Details</th><th></th></tr>
+        <tr><th>Name</th><th>Zip</th><th colspan="2">Details</th><th></th><th></th><th></th></tr>
         @foreach (Order o in Model) {
-            <tr>
-                <td>@o.Name</td>
-                <td>@o.Zip</td>
-                <th>Product</th>
-                <th>Quantity</th>
-                <td>
-                    <form asp-action="MarkShipped" method="post">
-                        <input type="hidden" name="orderId" value="@o.OrderID" />
-                        <button type="submit" class="btn btn-sm btn-danger">
-                            Ship
-                        </button>
-                    </form>
-                </td>
-            </tr>
-            @foreach (CartLine line in o.Lines) {
-                <tr>
-                    <td colspan="2"></td>
-                    <td>@line.Product.Name</td>
-                    <td>@line.Quantity</td>
-                    <td></td>
-                </tr>
+    <tr>
+        <td>@o.ShippingInfo.Name</td>
+        <td>@o.ShippingInfo.Zip</td>
+        <th>Product</th>
+        <th>Quantity</th>
+        <td>
+            @if (@o.ShippingInfo.Shipped)
+                    {
+            <p>Shipped</p>
+                    }
+                    else
+                    {
+            <p>Not shipped</p>
+                    }
+        </td>
+        @if (@tenant == "1")
+                {
+        <td>
+            @if (@o.ShippingInfo.Shipped)
+                    {
+            <p style="color: red;">RFID Tags scanned</p>
+                    }
+                    else
+                    {
+            <p style="color: red;">RFID Tags not scanned</p>
+                    }
+        </td>
+                    }
+        @if (@tenant == "2" && @o.ShippingInformation != null)
+                {
+        <td style="color: red;">Shipping date: @o.ShippingInformation.shippingTime</td>
+        <td style="color: red;">Arrival date: @o.ShippingInformation.arrivalTime</td>
+                    }
+        }
+    </tr>
+        @foreach (CartLine line in o.Lines) {
+        <tr>
+            <td colspan="2"></td>
+            <td>@line.ProductName</td>
+            <td>@line.Quantity</td>
+            <td></td>
+            @if (@tenant == "2")
+                {
+            <td></td>
+            <td></td>
+        }
+        </tr>
 
             }
         }
